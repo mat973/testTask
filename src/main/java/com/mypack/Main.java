@@ -111,8 +111,12 @@ public class Main {
             for (int i = 0; i < groupsArrays.length; i++) {
                 writer.println();
                 writer.println("Группа " + (i + 1));
+                Set<String> uniqueLines = new LinkedHashSet<>();
                 for (int idxInGroup : groupsArrays[i]) {
-                    writer.println(lines.get(idxInGroup));
+                    uniqueLines.add(lines.get(idxInGroup));
+                }
+                for (String uniqueLine : uniqueLines) {
+                    writer.println(uniqueLine);
                 }
             }
         }
