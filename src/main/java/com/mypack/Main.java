@@ -3,6 +3,9 @@ package com.mypack;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 public class Main {
     static int[] parent;
@@ -20,12 +23,41 @@ public class Main {
         String inputFilePath = args[0];
         List<String> lines = new ArrayList<>();
 
-        try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(new FileInputStream(inputFilePath), StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (isValidLine(line)) {
-                    lines.add(line);
+
+        if (inputFilePath.toLowerCase().endsWith(".zip")) {
+            try (ZipInputStream zis = new ZipInputStream(new FileInputStream(inputFilePath), StandardCharsets.UTF_8)) {
+                ZipEntry entry = zis.getNextEntry();
+                if (entry == null) {
+                    System.out.println("Archive is empty");
+                    return;
+                }
+
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(zis, StandardCharsets.UTF_8))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        if (isValidLine(line)) {
+                            lines.add(line);
+                        }
+                    }
+                }
+            }
+        } else if (inputFilePath.toLowerCase().endsWith(".gz")) {
+            // Читаем из gzip
+            try (GZIPInputStream gzis = new GZIPInputStream(new FileInputStream(inputFilePath));
+                 BufferedReader reader = new BufferedReader(new InputStreamReader(gzis, StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (isValidLine(line)) lines.add(line);
+                }
+            }
+        } else {
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(new FileInputStream(inputFilePath), StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (isValidLine(line)) {
+                        lines.add(line);
+                    }
                 }
             }
         }
