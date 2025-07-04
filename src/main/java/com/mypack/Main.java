@@ -19,9 +19,8 @@ public class Main {
             System.out.println("Usage: java -jar app.jar <input_file_path>");
             return;
         }
-
         String inputFilePath = args[0];
-        List<String> lines = new ArrayList<>();
+        Set<String> uniqueLinesParse = new LinkedHashSet<>();
 
 
         if (inputFilePath.toLowerCase().endsWith(".zip")) {
@@ -36,18 +35,17 @@ public class Main {
                     String line;
                     while ((line = reader.readLine()) != null) {
                         if (isValidLine(line)) {
-                            lines.add(line);
+                            uniqueLinesParse.add(line);
                         }
                     }
                 }
             }
         } else if (inputFilePath.toLowerCase().endsWith(".gz")) {
-            // Читаем из gzip
             try (GZIPInputStream gzis = new GZIPInputStream(new FileInputStream(inputFilePath));
                  BufferedReader reader = new BufferedReader(new InputStreamReader(gzis, StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    if (isValidLine(line)) lines.add(line);
+                    if (isValidLine(line)) uniqueLinesParse.add(line);
                 }
             }
         } else {
@@ -56,11 +54,13 @@ public class Main {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     if (isValidLine(line)) {
-                        lines.add(line);
+                        uniqueLinesParse.add(line);
                     }
                 }
             }
         }
+
+        List<String> lines = new ArrayList<>(uniqueLinesParse);
 
         int n = lines.size();
         parent = new int[n];
@@ -115,6 +115,7 @@ public class Main {
             }
         }
 
+
         Arrays.sort(groupsArrays, (a, b) -> Integer.compare(b.length, a.length));
 
         try (PrintWriter writer = new PrintWriter(new FileWriter("output.txt"))) {
@@ -122,15 +123,12 @@ public class Main {
             for (int i = 0; i < groupsArrays.length; i++) {
                 writer.println();
                 writer.println("Группа " + (i + 1));
-                Set<String> uniqueLines = new LinkedHashSet<>();
                 for (int idxInGroup : groupsArrays[i]) {
-                    uniqueLines.add(lines.get(idxInGroup));
-                }
-                for (String uniqueLine : uniqueLines) {
-                    writer.println(uniqueLine);
+                    writer.println(lines.get(idxInGroup));
                 }
             }
         }
+
 
         long end = System.currentTimeMillis();
         System.out.println("Групп с более чем одним элементом: " + groupsArrays.length);
